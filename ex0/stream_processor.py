@@ -5,10 +5,10 @@ from typing import Any
 class DataProcessor(ABC):
     @abstractmethod
     def process(self, data: Any) -> str:
-        pass
+        ...
 
     def validate(self, data: Any) -> bool:
-        pass
+        ...
 
     def format_output(self, result: str) -> str:
         return result

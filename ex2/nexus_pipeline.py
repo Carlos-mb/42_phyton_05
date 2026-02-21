@@ -1,5 +1,6 @@
-from typing import Protocol, Any
 from abc import ABC, abstractmethod
+from typing import Protocol, Any
+
 
 class ProcessingStage(Protocol):
     """Does not create a real class, only defines an interface.
@@ -13,20 +14,24 @@ class ProcessingStage(Protocol):
         does not create a class or method"""
         ...
 
+
 class InputStage:
     def process(self, data: Any) -> Any:
         print("Stage Input: Validating and parsing data")
         return data
+
 
 class TransformStage:
     def process(self, data: Any) -> Any:
         print("Stage Transform: Enriching data")
         return data
 
+
 class OutputStage:
     def process(self, data: Any) -> Any:
         print("Stage Output: Formatting result")
         return data
+
 
 class ProcessingPipeline(ABC):
 
@@ -35,10 +40,10 @@ class ProcessingPipeline(ABC):
         self.stages: list[ProcessingStage] = []
         self.processed_count: int = 0
 
-    def add_stage(self, stage: ProcessingStage) -> None:        
+    def add_stage(self, stage: ProcessingStage) -> None:
         self.stages.append(stage)
 
-    def run_stages(self, data: Any) -> Any: 
+    def run_stages(self, data: Any) -> Any:
         current_data: Any = data
 
         for stage in self.stages:
@@ -46,7 +51,7 @@ class ProcessingPipeline(ABC):
                 current_data = stage.process(current_data)
             except Exception as e:
                 print(f"Stage error: {e}")
-            
+
         return current_data
 
     @abstractmethod
@@ -54,14 +59,16 @@ class ProcessingPipeline(ABC):
         """The modern way is (str | Any) instead of Union[str, Any]"""
         ...
 
+
 class JSONAdapter(ProcessingPipeline):
     def process(self, data: Any) -> Any:
-        print(f"Adapter: Processing JSON data through pipeline...")
+        print("Adapter: Processing JSON data through pipeline...")
         print(f"Receiving: {data}\n")
         result = self.run_stages(data)
         self.processed_count += 1
         return f"Processed JSON data: {result}"
-    
+
+
 class CSVAdapter(ProcessingPipeline):
     def process(self, data: Any) -> Any:
         print("Adapter: Processing CSV data through same pipeline...")
@@ -69,6 +76,7 @@ class CSVAdapter(ProcessingPipeline):
         result = self.run_stages(data)
         self.processed_count += 1
         return f"Processed CSV data: {result}"
+
 
 class StreamAdapter(ProcessingPipeline):
     def process(self, data: Any) -> Any:
@@ -78,13 +86,14 @@ class StreamAdapter(ProcessingPipeline):
         self.processed_count += 1
         return f"Processed STREAM data: {result}"
 
+
 class NexusManager():
     def __init__(self) -> None:
         self.pipelines: list[ProcessingPipeline] = []
-    
+
     def add_pipeline(self, pipeline: ProcessingPipeline) -> None:
         self.pipelines.append(pipeline)
-    
+
     def execute_all(self, data: Any):
         """This is an individual execute of processes"""
         for pipeline in self.pipelines:
@@ -95,7 +104,7 @@ class NexusManager():
                 print(f"Error procesing data {e}")
 
     def execute_chain(self, data: Any) -> Any:
-        """This is a pipeline. 
+        """This is a pipeline.
         The output of one stage is the input of the next"""
 
         current_data = data
@@ -103,14 +112,14 @@ class NexusManager():
         for pipeline in self.pipelines:
             print(f"\nChain pass {i}: ")
             current_data = pipeline.process(current_data)
-            i = i +1
+            i = i + 1
         return current_data
 
     def get_pipelines(self):
         """Just for fun :)."""
         for pipeline in self.pipelines:
             yield pipeline
-        
+
 
 def main():
     """
@@ -125,26 +134,26 @@ def main():
 
     print("=== CODE NEXUS - ENTERPRISE PIPELINE SYSTEM ===")
     print("Initializing Nexus Manager...")
-    
+
     manager = NexusManager()
 
     print("Creating json pipeline with 3 stages")
     json_pipeline = JSONAdapter("JSON_01")
     json_pipeline.add_stage(InputStage())
     json_pipeline.add_stage(TransformStage())
-    json_pipeline.add_stage(OutputStage())    
+    json_pipeline.add_stage(OutputStage())
 
     print("Creating csv pipeline with 3 stages")
     csv_pipeline = CSVAdapter("CSV_01")
     csv_pipeline.add_stage(InputStage())
     csv_pipeline.add_stage(TransformStage())
-    csv_pipeline.add_stage(OutputStage())    
+    csv_pipeline.add_stage(OutputStage())
 
     print("Creating stream pipeline with 3 stages")
     stream_pipeline = StreamAdapter("STREAM_01")
     stream_pipeline.add_stage(InputStage())
     stream_pipeline.add_stage(TransformStage())
-    stream_pipeline.add_stage(OutputStage())    
+    stream_pipeline.add_stage(OutputStage())
 
     print("Adding 3 pipelines to Pipeline Manager")
     manager.add_pipeline(json_pipeline)
@@ -171,6 +180,7 @@ def main():
     print("\n=== Statistics ===")
     for pipeline in manager.get_pipelines():
         print(f"Pipeline {pipeline.pipeline_id}: {pipeline.processed_count}")
+
 
 if __name__ == "__main__":
     main()
